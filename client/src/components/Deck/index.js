@@ -98,6 +98,7 @@ class PetDeck extends React.Component {
 const mapStatetoProps = (state) => {
   return {
     pets: state.tomo.pets,
+    petsAddress: state.tomo.petsAddress,
     account: state.tomo.account,
     balance: state.tomo.balance
   };
