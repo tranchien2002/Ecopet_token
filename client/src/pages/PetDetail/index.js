@@ -12,6 +12,7 @@ import Pet from 'constants/Pet';
 import { PetAction } from 'constants/PetAction';
 import Food from 'components/Food';
 import Withdraw from 'components/Withdraw';
+import FeedPetModal from 'components/FeedModal';
 import './index.css';
 import { petFood } from 'constants/PetFood';
 import { withDraw } from 'constants/Petwithdraw';
@@ -35,7 +36,8 @@ class PetDetail extends Component {
       yCoordinate: (window.innerHeight * 2) / 3,
       feed: true,
       feedButtonColor: 'success',
-      withDrawButtonColor: 'secondary'
+      withDrawButtonColor: 'secondary',
+      isOpen: true
     };
     this.canvas = React.createRef();
     this.tick = this.tick.bind(this);
@@ -219,6 +221,15 @@ class PetDetail extends Component {
       feedButtonColor: 'secondary'
     });
   };
+  toggle = () => {
+    this.setState({
+      isOpen: !this.state.isOpen
+    });
+  };
+  handelFoodClick = () => {
+    this.toggle();
+    // this.feedPet(item.value);
+  };
   render() {
     return (
       <div className='view'>
@@ -256,12 +267,14 @@ class PetDetail extends Component {
               <canvas id='canvas' />
             </Row>
             <Row>
+              <FeedPetModal isOpen={this.state.isOpen} toggle={this.toggle} />
+
               {this.state.feed
                 ? petFood.map((item) => (
                     <Col
                       xs='4'
                       className='z-index-1000'
-                      onClick={() => this.feedPet(item.value)}
+                      onClick={this.handelFoodClick}
                       key={item.value}
                     >
                       <Food item={item} />

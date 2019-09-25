@@ -1,0 +1,12 @@
+.dropdown button{
+  background: white;
+  color: black;
+  width: 180px !important;
+  border:white
+}
+input {
+  border: white !important
+}
+.modal-body{
+  background: #eff4fa
+}
