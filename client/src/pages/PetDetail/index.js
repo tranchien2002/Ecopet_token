@@ -53,15 +53,16 @@ class PetDetail extends Component {
     } else if (window.web3.currentProvider.isTomoWallet) {
       await store.dispatch(actions.web3TomoWalletConnect());
     }
-    // await store.dispatch(actions.instantiateContracts());
     await store.dispatch(actions.getAllPetsAddress());
-    let PetInstance = new this.props.tomo.web3.eth.Contract(
-      petWallet.abi,
-      this.props.match.params.address,
-      {
-        transactionConfirmationBlocks: 1
-      }
-    );
+    let petAddress;
+    if (this.props.match.params.index) {
+      petAddress = this.props.petsAddress[this.props.match.params.index];
+    } else {
+      petAddress = this.props.match.params.address;
+    }
+    let PetInstance = new this.props.tomo.web3.eth.Contract(petWallet.abi, petAddress, {
+      transactionConfirmationBlocks: 1
+    });
     this.stage = new createjs.Stage('canvas');
     var divcanvas = document.getElementById('box-canvas');
 

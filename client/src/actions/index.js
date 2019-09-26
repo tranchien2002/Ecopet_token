@@ -136,7 +136,7 @@ export const createNewPet = (petId, targetFund, duration, purpose) => async (
     .create(petId, targetFund, duration, purpose)
     .send({ from: account })
     .then(() => {
-      window.location.href = `/pets/${pets.length}`;
+      window.location.href = `/mypets/${pets.length}`;
     })
     .catch((e) => {
       console.log('Create pet action error', e);
