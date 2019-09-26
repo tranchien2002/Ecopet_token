@@ -15,9 +15,7 @@ module.exports = {
           process.env.MNENOMIC,
           'https://ropsten.infura.io/v3/' + process.env.INFURA_API_KEY
         ),
-      network_id: 3,
-      port: 8545,
-      gas: 4612388
+      network_id: 3
     },
     ganache: {
       host: '127.0.0.1',
@@ -94,24 +92,24 @@ module.exports = {
       gas: 0xfffffffffff, // <-- Use this high gas value
       gasPrice: 0x01 // <-- Use this low gas price
     }
+  },
+
+  mocha: {
+    // timeout: 100000
+  },
+
+  compilers: {
+    solc: {
+      version: '0.5.0', // Fetch exact version from solc-bin (default: truffle's version)
+      // docker: true,        // Use "0.5.1" you've installed locally with docker (default: false)
+      settings: {
+        // See the solidity docs for advice about optimization and evmVersion
+        optimizer: {
+          enabled: false,
+          runs: 200
+        }
+        //  evmVersion: "byzantium"
+      }
+    }
   }
-
-  // mocha: {
-  //   // timeout: 100000
-  // },
-
-  // compilers: {
-  //   solc: {
-  //     version: '0.5.0', // Fetch exact version from solc-bin (default: truffle's version)
-  //     // docker: true,        // Use "0.5.1" you've installed locally with docker (default: false)
-  //     settings: {
-  //       // See the solidity docs for advice about optimization and evmVersion
-  //       optimizer: {
-  //         enabled: false,
-  //         runs: 200
-  //       }
-  //       //  evmVersion: "byzantium"
-  //     }
-  //   }
-  // }
 };
