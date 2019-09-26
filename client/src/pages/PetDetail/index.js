@@ -37,7 +37,8 @@ class PetDetail extends Component {
       feed: true,
       feedButtonColor: 'success',
       withDrawButtonColor: 'secondary',
-      isOpen: true
+      isOpen: false,
+      value: 0
     };
     this.canvas = React.createRef();
     this.tick = this.tick.bind(this);
@@ -222,15 +223,19 @@ class PetDetail extends Component {
       feedButtonColor: 'secondary'
     });
   };
-  toggle = () => {
+  toggle = (value) => {
+    this.setState({
+      value: value
+    });
     this.setState({
       isOpen: !this.state.isOpen
     });
   };
-  handelFoodClick = () => {
-    this.toggle();
-    // this.feedPet(item.value);
+  handelFoodClick = (value) => () => {
+    this.toggle(value);
+    //TODO
   };
+
   render() {
     return (
       <div className='view'>
@@ -268,14 +273,18 @@ class PetDetail extends Component {
               <canvas id='canvas' />
             </Row>
             <Row>
-              <FeedPetModal isOpen={this.state.isOpen} toggle={this.toggle} />
+              <FeedPetModal
+                isOpen={this.state.isOpen}
+                toggle={this.toggle}
+                value={this.state.value}
+              />
 
               {this.state.feed
                 ? petFood.map((item) => (
                     <Col
                       xs='4'
                       className='z-index-1000'
-                      onClick={this.handelFoodClick}
+                      onClick={this.handelFoodClick(item.value)}
                       key={item.value}
                     >
                       <Food item={item} />
