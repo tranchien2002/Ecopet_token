@@ -57,7 +57,7 @@ class PetDetail extends Component {
     await store.dispatch(actions.getAllPetsAddress());
     let PetInstance = new this.props.tomo.web3.eth.Contract(
       petWallet.abi,
-      this.props.petsAddress[this.props.match.params.address],
+      this.props.match.params.address,
       {
         transactionConfirmationBlocks: 1
       }

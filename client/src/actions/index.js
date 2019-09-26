@@ -25,13 +25,14 @@ export const web3Connect = () => async (dispatch) => {
   }
   dispatch(instantiateContracts());
   dispatch(getAllPets());
+  dispatch(getAllPetsAddress());
 };
 
 export const web3TomoWalletConnect = () => async (dispatch) => {
   var Web3 = require('web3');
   const web3 = new Web3(window.web3.currentProvider);
   window.web3.version.getNetwork((e, netId) => {
-    if (netId !== '88') {
+    if (netId !== '3') {
       alert('Unknown network, please change network to TomoChain network');
       return;
     }
@@ -102,6 +103,7 @@ export const getAllPets = () => async (dispatch, getState) => {
     pet.targetFund = petInfo[3].toNumber();
     pet.duration = petInfo[4].toNumber();
     pet.purpose = petInfo[5];
+    pet.address = petArray[i];
     pets.push(pet);
   }
   dispatch({
