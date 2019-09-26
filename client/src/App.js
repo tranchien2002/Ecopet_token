@@ -13,6 +13,7 @@ function App() {
         <Switch>
           <Route exact path='/' component={Home} />
           <Route path='/pets/:address' component={PetDetail} />
+          <Route path='/mypets/:index' component={PetDetail} />
         </Switch>
         <ToastContainer />
       </div>
