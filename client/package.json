@@ -21,7 +21,7 @@
     "redux-thunk": "^2.3.0",
     "slick-carousel": "^1.8.1",
     "thunk": "^0.0.1",
-    "web3": "1.0.0-beta.55"
+    "web3": "1.0.0-beta.35"
   },
   "scripts": {
     "start": "react-scripts start",

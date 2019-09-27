@@ -80,11 +80,11 @@ class PetDetail extends Component {
   async getPetInfo() {
     let petInfo = Object.values(await this.state.petInstance.methods.getInformation().call());
     let [type, providentFund, growthTime, targetFund, duration] = [
-      petInfo[0].toNumber(),
-      petInfo[1].toNumber(),
-      petInfo[2].toNumber(),
-      petInfo[3].toNumber(),
-      petInfo[4].toNumber(),
+      petInfo[0],
+      petInfo[1],
+      petInfo[2],
+      petInfo[3],
+      petInfo[4],
       petInfo[5]
     ];
     console.log('providentFund', providentFund);
