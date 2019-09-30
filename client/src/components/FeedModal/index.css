@@ -10,3 +10,8 @@ input {
 .modal-body{
   background: #eff4fa
 }
+.rate{
+  padding-top: 5px;
+  color: #8690ad;
+  font-size:13px
+}
