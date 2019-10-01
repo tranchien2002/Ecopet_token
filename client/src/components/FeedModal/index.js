@@ -19,15 +19,16 @@ class FeedPetModal extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      isOpen: false,
-      currentToken: 'https://files.kyber.network/DesignAssets/tokens/eth.svg',
+      isDropdownOpen: false,
+      currentToken: '',
       name: 'ETH',
       tokenAddress: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-      value: props.value,
-      rate: '',
-      changeETH: '',
-      changeUSD: '',
-      rateUSD: ''
+      value: 1,
+      tokenValue: 0,
+      rate: 0,
+      changeETH: 0,
+      changeUSD: 0,
+      rateUSD: 0
     };
   }
   componentWillReceiveProps(props) {
@@ -37,18 +38,21 @@ class FeedPetModal extends React.Component {
       name: 'ETH'
     });
   }
-  handelToggle = () => {
+  handelDropdownToggle = () => {
     this.setState({
-      isOpen: !this.state.isOpen
+      isDropdownOpen: !this.state.isDropdownOpen
     });
   };
-  changeToken = (src, name, address) => {
+  changeToken = async (src, name, address) => {
     this.setState({
       currentToken: src,
       name: name,
       tokenAddress: address
     });
-    this.getRate();
+    await this.getRate();
+    this.setState({
+      value: this.state.tokenValue * this.state.rate
+    });
   };
   getRate = async () => {
     let ratesRequest = await fetch('https://api.kyber.network/change24h');
@@ -61,13 +65,26 @@ class FeedPetModal extends React.Component {
       rate: rate,
       changeETH: changeETH,
       changeUSD: changeUSD,
-      rateUSD: rateUSD,
-      value: this.props.value / rate
+      rateUSD: rateUSD
     });
-    console.log(rateList['ETH_KNC'].change_usd_24h);
   };
   handleChange = (event) => {
-    this.setState({ value: event.target.value });
+    this.getRate();
+    this.setState({
+      tokenValue: event.target.value,
+      value: event.target.value * this.state.rate
+    });
+  };
+  handleChangeETH = (event) => {
+    this.getRate();
+    this.setState({
+      value: event.target.value,
+      tokenValue: event.target.value / this.state.rate
+    });
+  };
+  handleSwapTokenClick = (value) => () => {
+    //TODO: swap token
+    this.props.toggle();
   };
   render() {
     return (
@@ -76,8 +93,18 @@ class FeedPetModal extends React.Component {
           <ModalHeader></ModalHeader>
           <ModalBody>
             <Row>
-              <Col xs='5'>
-                <Dropdown isOpen={this.state.isOpen} toggle={this.handelToggle}>
+              <Col>
+                <b>From:</b>
+              </Col>
+              <Col></Col>
+              <Col>
+                <b>To: </b>
+              </Col>
+              <Col></Col>
+            </Row>
+            <Row>
+              <Col xs='3'>
+                <Dropdown isOpen={this.state.isDropdownOpen} toggle={this.handelDropdownToggle}>
                   <DropdownToggle className='toggle'>
                     <Row>
                       <Col>
@@ -105,16 +132,40 @@ class FeedPetModal extends React.Component {
                   </DropdownMenu>
                 </Dropdown>
               </Col>
-              <Col xs='7'>
+              <Col xs='3'>
                 <Row>
-                  <Input type='text' value={this.state.value} onChange={this.handleChange} />
+                  <Input type='number' value={this.state.tokenValue} onChange={this.handleChange} />
                 </Row>
+              </Col>
+              <Col xs='3'>
+                <Dropdown>
+                  <DropdownToggle className='toggle'>
+                    <Row>
+                      <Col>
+                        <img
+                          src='https://files.kyber.network/DesignAssets/tokens/eth.svg'
+                          width='28'
+                          alt='Token'
+                        />
+                      </Col>
+                      <Col>ETH</Col>
+                    </Row>
+                  </DropdownToggle>
+                </Dropdown>
+              </Col>
+              <Col xs='3'>
                 <Row>
-                  <div className='rate'>
-                    {this.state.name} = {Math.round(this.state.rate * 1000) / 1000} ETH ={' '}
-                    {Math.round(this.state.rateUSD * 1000) / 1000} USD
-                  </div>
+                  <Input type='number' value={this.state.value} onChange={this.handleChangeETH} />
                 </Row>
+              </Col>
+            </Row>
+            <Row>
+              <Col></Col>
+              <Col>
+                <div className='rate'>
+                  1 {this.state.name} = {Math.round(this.state.rate * 1000) / 1000} ETH ={' '}
+                  {Math.round(this.state.rateUSD * 1000) / 1000} USD
+                </div>
               </Col>
             </Row>
           </ModalBody>
@@ -137,8 +188,8 @@ class FeedPetModal extends React.Component {
                 USD: {Math.round(this.state.changeUSD * 1000) / 1000} %
               </p>
             </Col>
-            <Button color='success' onClick={() => this.handleClick().then(this.props.toggle)}>
-              Feed
+            <Button color='success' onClick={this.handleSwapTokenClick(this.state.value)}>
+              Swap
             </Button>
             <Button color='danger' onClick={this.props.toggle}>
               Cancel

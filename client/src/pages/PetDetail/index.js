@@ -12,7 +12,6 @@ import Pet from 'constants/Pet';
 import { PetAction } from 'constants/PetAction';
 import Food from 'components/Food';
 import Withdraw from 'components/Withdraw';
-import FeedPetModal from 'components/FeedModal';
 import './index.css';
 import { petFood } from 'constants/PetFood';
 import { withDraw } from 'constants/Petwithdraw';
@@ -36,9 +35,7 @@ class PetDetail extends Component {
       yCoordinate: (window.innerHeight * 2) / 3,
       feed: true,
       feedButtonColor: 'success',
-      withDrawButtonColor: 'secondary',
-      isOpen: false,
-      value: 0
+      withDrawButtonColor: 'secondary'
     };
     this.canvas = React.createRef();
     this.tick = this.tick.bind(this);
@@ -87,7 +84,6 @@ class PetDetail extends Component {
       petInfo[4].toNumber(),
       petInfo[5]
     ];
-    console.log('providentFund', providentFund);
     this.setState({ type, providentFund, growthTime, targetFund, duration });
     this.getProgress();
     this.getSize();
@@ -164,6 +160,7 @@ class PetDetail extends Component {
   };
   action() {
     let divcanvas = document.getElementById('box-canvas');
+    if (!divcanvas) return;
     this.stage.removeAllChildren();
     const img = new Image();
     img.src = Pet[this.state.type].background.src;
@@ -223,18 +220,6 @@ class PetDetail extends Component {
       feedButtonColor: 'secondary'
     });
   };
-  toggle = (value) => {
-    this.setState({
-      value: value
-    });
-    this.setState({
-      isOpen: !this.state.isOpen
-    });
-  };
-  handelFoodClick = (value) => () => {
-    this.toggle(value);
-    //TODO
-  };
 
   render() {
     return (
@@ -248,12 +233,15 @@ class PetDetail extends Component {
                     <CircularProgressbarWithChildren
                       value={(this.state.providentFund / this.state.targetFund) * 100}
                     >
-                      <img alt='' src={require('assets/img/giphy.webp')} width='40' />
+                      <img
+                        alt=''
+                        src={Pet[this.state.type].progress[this.state.progress].src}
+                        width='40'
+                      />
                       <div className='fund-circle-tracking-info'>
                         <strong>
                           {this.state.providentFund} / {this.state.targetFund}
                         </strong>
-                        TOMO
                       </div>
                     </CircularProgressbarWithChildren>
                   </div>
@@ -273,18 +261,12 @@ class PetDetail extends Component {
               <canvas id='canvas' />
             </Row>
             <Row>
-              <FeedPetModal
-                isOpen={this.state.isOpen}
-                toggle={this.toggle}
-                value={this.state.value}
-              />
-
               {this.state.feed
                 ? petFood.map((item) => (
                     <Col
                       xs='4'
                       className='z-index-1000'
-                      onClick={this.handelFoodClick(item.value)}
+                      onClick={() => this.feedPet(item.value)}
                       key={item.value}
                     >
                       <Food item={item} />

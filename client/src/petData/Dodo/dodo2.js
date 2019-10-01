@@ -74,7 +74,7 @@ const walk = {
 const dead = {
   images: [require('assets/sprites/dodo/dead.png')],
 
-  framerate: 10,
+  framerate: 5,
   frames: [
     [267, 1, 235, 208, 0, 117.5, 208], //1
     [1, 622, 264, 188, 0, 132, 188], //2
