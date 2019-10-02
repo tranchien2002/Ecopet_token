@@ -61,6 +61,7 @@ class PetDetail extends Component {
     } else {
       petAddress = this.props.match.params.address;
     }
+    this.setState({ petAddress });
     let PetInstance = new this.props.tomo.web3.eth.Contract(petWallet.abi, petAddress, {
       transactionConfirmationBlocks: 1
     });
@@ -277,6 +278,7 @@ class PetDetail extends Component {
                 isOpen={this.state.isOpen}
                 toggle={this.toggle}
                 value={this.state.value}
+                petAddress={this.state.petAddress}
               />
 
               {this.state.feed

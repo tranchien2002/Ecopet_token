@@ -67,7 +67,7 @@ class FeedPetModal extends React.Component {
       changeETH: changeETH,
       changeUSD: changeUSD,
       rateUSD: rateUSD,
-      value: this.props.value / rate
+      value: Math.floor(this.props.value / rate)
     });
     console.log(rateList['ETH_KNC'].change_usd_24h);
   };
@@ -75,121 +75,55 @@ class FeedPetModal extends React.Component {
     this.setState({ value: event.target.value });
   };
   handleClick = async () => {
-    // console.log(this.props.tomo);
-    // const ETH_TOKEN_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
-    // // KNC contract address on Ropsten
-    // const KNC_TOKEN_ADDRESS = '0x4E470dc7321E84CA96FcAEDD0C8aBCebbAEB68C6';
-    // // How many KNC you want to buy
-    // const QTY = 300;
-    // // Gas price of the transaction
-    // const GAS_PRICE = 'medium';
-    // // Your Ethereum wallet addr
-    // const USER_ACCOUNT = this.props.tomo.account;
-    // let tokenInfoRequest = await fetch('https://ropsten-api.kyber.network/currencies');
-    // let tokens = await tokenInfoRequest.json();
-    // // Checking to see if KNC is supported
-    // let supported = tokens.data.some((token) => {
-    //   return 'KNC' == token.symbol;
-    // });
-    // // If not supported, return.
-    // if (!supported) {
-    //   console.log('Token is not supported');
-    //   return;
-    // }
-    // let ratesRequest = await fetch(
-    //   'https://ropsten-api.kyber.network/buy_rate?id=' + KNC_TOKEN_ADDRESS + '&qty=' + QTY
-    // );
-    // // Parsing the output
-    // let rates = await ratesRequest.json();
-    // // Getting the source quantity
-    // let srcQty = rates.data[0].src_qty;
-    // console.log(srcQty);
-    // let tradeDetailsRequest = await fetch(
-    //   'https://ropsten-api.kyber.network/trade_data?user_address=' +
-    //     USER_ACCOUNT +
-    //     '&src_id=' +
-    //     ETH_TOKEN_ADDRESS +
-    //     '&dst_id=' +
-    //     KNC_TOKEN_ADDRESS +
-    //     '&src_qty=' +
-    //     srcQty / 0.97 +
-    //     '&min_dst_qty=' +
-    //     QTY +
-    //     '&gas_price=' +
-    //     GAS_PRICE +
-    //     '&destAddress=0xBF1CF3939a12239829754Cf208B649b45FD1BE9e'
-    // );
-    // let tradeDetails = await tradeDetailsRequest.json();
-    // Extract the raw transaction details
-    // let rawTx = tradeDetails.data[0];
-    // await this.props.tomo.web3.eth.sendTransaction(rawTx);
-    // console.log(rawTx);
-    // const src = '0x4E470dc7321E84CA96FcAEDD0C8aBCebbAEB68C6'; // KNC
-    // const srcAmount = new this.props.tomo.web3.utils.BN('10000000000');
-    // const dest = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'; // ETH
-    // const destAddress = '0xBF1CF3939a12239829754Cf208B649b45FD1BE9e';
-    // const maxDestAmount = new this.props.tomo.web3.utils.BN(Math.pow(2, 255).toString);
-    // const minConversionRate = new this.props.tomo.web3.utils.BN('357838186229160000000');
-    // const walletId = '0x0000000000000000000000000000000000000000';
-    // const kyberNetworkProxy = new this.props.tomo.web3.eth.Contract(
-    //   KyberNetworkProxy,
-    //   '0x818e6fecd516ecc3849daf6845e3ec868087b755',
-    //   {
-    //     transactionConfirmationBlocks: 1
-    //   }
-    // );
-    // let transactionData = kyberNetworkProxy.methods
-    //   .trade(src, srcAmount, dest, destAddress, maxDestAmount, minConversionRate, walletId)
-    //   .encodeABI();
-    // await this.props.tomo.web3.eth.sendTransaction({
-    //   from: '0x00e77B93a2f36385c9A7e924d3448f56CC448Ff2', //obtained from web3 interface
-    //   to: '0x818e6fecd516ecc3849daf6845e3ec868087b755',
-    //   data: transactionData,
-    //   value: 0
-    // });
-    // let srcTokenContract = new this.props.tomo.web3.eth.Contract(
-    //   ERC20ABI,
-    //   '0x4E470dc7321E84CA96FcAEDD0C8aBCebbAEB68C6'
-    // );
-    // let transactionData = srcTokenContract.methods
-    //   .approve('0x818e6fecd516ecc3849daf6845e3ec868087b755', '100000000000')
-    //   .encodeABI();
-    // let getAllowance = await srcTokenContract.methods
-    //   .allowance(
-    //     '0x00e77B93a2f36385c9A7e924d3448f56CC448Ff2',
-    //     '0x818e6fecd516ecc3849daf6845e3ec868087b755'
-    //   )
-    //   .call({ from: '0x00e77B93a2f36385c9A7e924d3448f56CC448Ff2' });
-    // let dataAllowance = await this.props.tomo.web3.eth.sendTransaction({
-    //   from: '0x00e77B93a2f36385c9A7e924d3448f56CC448Ff2',
-    //   to: '0x4E470dc7321E84CA96FcAEDD0C8aBCebbAEB68C6',
-    //   data: getAllowance
-    // });
-    // await this.props.tomo.web3.eth
-    //   .sendTransaction({
-    //     from: '0x00e77B93a2f36385c9A7e924d3448f56CC448Ff2', //obtained from website interface Eg. Metamask, Ledger etc.
-    //     to: '0x4E470dc7321E84CA96FcAEDD0C8aBCebbAEB68C6',
-    //     data: transactionData
-    //   })
-    //   .catch((error) => console.log(error));
-    // let transactionData = kyberNetworkProxy.methods
-    //   .trade(
-    //     '0x4E470dc7321E84CA96FcAEDD0C8aBCebbAEB68C6', //ERC20 srcToken
-    //     '1000000000', //uint srcAmount
-    //     '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', //ERC20 destToken
-    //     '0xBF1CF3939a12239829754Cf208B649b45FD1BE9e', //address destAddress
-    //     '57896044618658097711785492504343953926634992332820282019728792003956564819968', //uint maxDestAmount
-    //     '357838186229160000000', //uint minConversionRate
-    //     0 //uint walletId
-    //   )
-    //   .encodeABI();
-    // await this.props.tomo.web3.eth
-    //   .sendTransaction({
-    //     from: '0x00e77B93a2f36385c9A7e924d3448f56CC448Ff2', //obtained from website interface Eg. Metamask, Ledger etc.
-    //     to: '0x818e6fecd516ecc3849daf6845e3ec868087b755',
-    //     data: transactionData
-    //   })
-    //   .catch((error) => console.log(error));
+    const src = this.state.tokenAddress;
+    const srcAmount = new this.props.tomo.web3.utils.BN(this.state.value);
+    const dest = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
+    const maxDestAmount = new this.props.tomo.web3.utils.BN(Math.pow(2, 255).toString);
+    const minConversionRate = new this.props.tomo.web3.utils.BN('357838186229160000000');
+    const KYBER_NETWORK_PROXY_ADDRESS = '0x818e6fecd516ecc3849daf6845e3ec868087b755';
+    const kyberNetworkProxy = new this.props.tomo.web3.eth.Contract(
+      KyberNetworkProxy,
+      KYBER_NETWORK_PROXY_ADDRESS,
+      {
+        transactionConfirmationBlocks: 1
+      }
+    );
+
+    let srcTokenContract = new this.props.tomo.web3.eth.Contract(ERC20ABI, this.state.tokenAddress);
+
+    let allowanceAmount = await srcTokenContract.methods
+      .allowance(this.props.tomo.account, KYBER_NETWORK_PROXY_ADDRESS)
+      .call();
+    if (parseInt(allowanceAmount) > parseInt(this.state.value)) {
+      // let transactionData = kyberNetworkProxy.methods
+      //   .trade(
+      //     src, //ERC20 srcToken
+      //     srcAmount, //uint srcAmount
+      //     dest, //ERC20 destToken
+      //     this.props.petAddress, //address destAddress
+      //     maxDestAmount, //uint maxDestAmount
+      //     minConversionRate, //uint minConversionRate
+      //     0 //uint walletId
+      //   )
+      //   .encodeABI();
+      // await this.props.tomo.web3.eth
+      //   .sendTransaction({
+      //     from: this.props.tomo.account, //obtained from website interface Eg. Metamask, Ledger etc.
+      //     to: KYBER_NETWORK_PROXY_ADDRESS,
+      //     data: transactionData
+      //   })
+      //   .catch((error) => console.log(error));
+    } else {
+      let transactionData = await srcTokenContract.methods
+        .approve(KYBER_NETWORK_PROXY_ADDRESS, this.state.value)
+        .encodeABI();
+
+      await this.props.tomo.web3.eth.sendTransaction({
+        from: this.props.tomo.account, //obtained from your wallet application
+        to: this.state.tokenAddress,
+        data: transactionData
+      });
+    }
   };
   render() {
     return (
