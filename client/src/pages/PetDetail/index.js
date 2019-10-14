@@ -78,7 +78,7 @@ class PetDetail extends Component {
     this.getPetInfo();
   }
 
-  async getPetInfo() {
+  getPetInfo = async () => {
     let petInfo = Object.values(await this.state.petInstance.methods.getInformation().call());
     let [type, providentFund, growthTime, targetFund, duration] = [
       petInfo[0],
@@ -93,7 +93,7 @@ class PetDetail extends Component {
     this.getProgress();
     this.getSize();
     this.action();
-  }
+  };
 
   getProgress() {
     let progress = (this.state.growthTime / this.state.duration) * 100;
@@ -236,6 +236,12 @@ class PetDetail extends Component {
     this.toggle(value);
     //TODO
   };
+  handleFeedModal = () => {
+    this.setState({
+      action: PetAction.FEED
+    });
+    this.action();
+  };
 
   render() {
     return (
@@ -279,6 +285,9 @@ class PetDetail extends Component {
                 toggle={this.toggle}
                 value={this.state.value}
                 petAddress={this.state.petAddress}
+                petInstance={this.state.petInstance}
+                feedAction={this.handleFeedModal}
+                getPetInfo={this.getPetInfo}
               />
 
               {this.state.feed

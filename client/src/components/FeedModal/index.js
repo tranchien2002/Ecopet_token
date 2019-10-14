@@ -20,6 +20,8 @@ import { connect } from 'react-redux';
 import KyberNetworkProxy from 'constants/KyberNetworkProxy.json';
 import ERC20ABI from 'constants/ERC20ABI.json';
 
+const KYBER_NETWORK_PROXY_ADDRESS = '0x818E6FECD516Ecc3849DAf6845e3EC868087B755';
+
 class FeedPetModal extends React.Component {
   constructor(props) {
     super(props);
@@ -74,13 +76,20 @@ class FeedPetModal extends React.Component {
   handleChange = (event) => {
     this.setState({ value: event.target.value });
   };
+  getAllowance = async (erc20Address) => {
+    let srcTokenContract = new this.props.tomo.web3.eth.Contract(ERC20ABI, erc20Address);
+    let allowanceAmount = await srcTokenContract.methods
+      .allowance(this.props.tomo.account, KYBER_NETWORK_PROXY_ADDRESS)
+      .call();
+    return allowanceAmount;
+  };
   handleClick = async () => {
     const src = this.state.tokenAddress;
-    const srcAmount = new this.props.tomo.web3.utils.BN(this.state.value);
+    const amount = parseInt(this.state.value) * 10 ** 18;
+    const srcAmount = new this.props.tomo.web3.utils.BN(amount.toString());
     const dest = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
-    const maxDestAmount = new this.props.tomo.web3.utils.BN(Math.pow(2, 255).toString);
-    const minConversionRate = new this.props.tomo.web3.utils.BN('357838186229160000000');
-    const KYBER_NETWORK_PROXY_ADDRESS = '0x818e6fecd516ecc3849daf6845e3ec868087b755';
+    const maxDestAmount = new this.props.tomo.web3.utils.BN(Math.pow(2, 255).toString());
+    const minConversionRate = new this.props.tomo.web3.utils.BN('55555');
     const kyberNetworkProxy = new this.props.tomo.web3.eth.Contract(
       KyberNetworkProxy,
       KYBER_NETWORK_PROXY_ADDRESS,
@@ -89,33 +98,46 @@ class FeedPetModal extends React.Component {
       }
     );
 
-    let srcTokenContract = new this.props.tomo.web3.eth.Contract(ERC20ABI, this.state.tokenAddress);
+    if (src === dest) {
+      await this.props.petInstance.methods
+        .savingMoney(this.state.value)
+        .send({ from: this.props.tomo.account, value: amount })
+        .on('transactionHash', (hash) => {
+          this.props.feedAction();
+        })
+        .on('receipt', (receipt) => {
+          this.props.getPetInfo();
+        })
+        .on('error', () => {
+          alert('Transaction failed');
+        });
+      return;
+    }
+    let srcTokenContract = new this.props.tomo.web3.eth.Contract(ERC20ABI, src);
 
-    let allowanceAmount = await srcTokenContract.methods
-      .allowance(this.props.tomo.account, KYBER_NETWORK_PROXY_ADDRESS)
-      .call();
-    if (parseInt(allowanceAmount) > parseInt(this.state.value)) {
-      // let transactionData = kyberNetworkProxy.methods
-      //   .trade(
-      //     src, //ERC20 srcToken
-      //     srcAmount, //uint srcAmount
-      //     dest, //ERC20 destToken
-      //     this.props.petAddress, //address destAddress
-      //     maxDestAmount, //uint maxDestAmount
-      //     minConversionRate, //uint minConversionRate
-      //     0 //uint walletId
-      //   )
-      //   .encodeABI();
-      // await this.props.tomo.web3.eth
-      //   .sendTransaction({
-      //     from: this.props.tomo.account, //obtained from website interface Eg. Metamask, Ledger etc.
-      //     to: KYBER_NETWORK_PROXY_ADDRESS,
-      //     data: transactionData
-      //   })
-      //   .catch((error) => console.log(error));
+    let allowanceAmount = this.getAllowance(src);
+    if (parseInt(allowanceAmount) >= amount) {
+      let transactionData = kyberNetworkProxy.methods
+        .trade(
+          src, //ERC20 srcToken
+          srcAmount, //uint srcAmount
+          dest, //ERC20 destToken
+          this.props.tomo.petAddress, //address destAddress
+          maxDestAmount, //uint maxDestAmount
+          minConversionRate, //uint minConversionRate
+          0 //uint walletId
+        )
+        .encodeABI();
+      await this.props.tomo.web3.eth
+        .sendTransaction({
+          from: this.props.tomo.account, //obtained from website interface Eg. Metamask, Ledger etc.
+          to: KYBER_NETWORK_PROXY_ADDRESS,
+          data: transactionData
+        })
+        .catch((error) => console.log(error));
     } else {
       let transactionData = await srcTokenContract.methods
-        .approve(KYBER_NETWORK_PROXY_ADDRESS, this.state.value)
+        .approve(KYBER_NETWORK_PROXY_ADDRESS, this.state.value * 10 ** 18)
         .encodeABI();
 
       await this.props.tomo.web3.eth.sendTransaction({
