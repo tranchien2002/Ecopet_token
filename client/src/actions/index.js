@@ -6,7 +6,8 @@ export const WEB3_CONNECT = 'WEB3_CONNECT';
 export const web3Connect = () => async (dispatch) => {
   const web3 = await getWeb3();
   const accounts = await web3.eth.getAccounts();
-  if (web3.currentProvider.connection.networkVersion !== '3') {
+  // if (web3.currentProvider.connection.networkVersion !== '3') {
+  if (web3.currentProvider.networkVersion !== '3') {
     alert('Unknown network, please change network to TomoChain network');
     return;
   }
@@ -97,11 +98,11 @@ export const getAllPets = () => async (dispatch, getState) => {
       transactionConfirmationBlocks: 1
     });
     let petInfo = await pet.instance.methods.getInformation().call();
-    pet.id = petInfo[0].toNumber();
-    pet.amount = petInfo[1].toNumber();
-    pet.time = petInfo[2].toNumber();
-    pet.targetFund = petInfo[3].toNumber();
-    pet.duration = petInfo[4].toNumber();
+    pet.id = petInfo[0];
+    pet.amount = petInfo[1];
+    pet.time = petInfo[2];
+    pet.targetFund = petInfo[3];
+    pet.duration = petInfo[4];
     pet.purpose = petInfo[5];
     pet.address = petArray[i];
     pets.push(pet);

@@ -15,6 +15,13 @@ import {
 } from 'reactstrap';
 import Token from 'constants/Token.js';
 import './index.css';
+import { compose } from 'redux';
+import { connect } from 'react-redux';
+import KyberNetworkProxy from 'constants/KyberNetworkProxy.json';
+import ERC20ABI from 'constants/ERC20ABI.json';
+
+const KYBER_NETWORK_PROXY_ADDRESS = '0x818E6FECD516Ecc3849DAf6845e3EC868087B755';
+
 class FeedPetModal extends React.Component {
   constructor(props) {
     super(props);
@@ -62,12 +69,83 @@ class FeedPetModal extends React.Component {
       changeETH: changeETH,
       changeUSD: changeUSD,
       rateUSD: rateUSD,
-      value: this.props.value / rate
+      value: Math.floor(this.props.value / rate)
     });
     console.log(rateList['ETH_KNC'].change_usd_24h);
   };
   handleChange = (event) => {
     this.setState({ value: event.target.value });
+  };
+  getAllowance = async (erc20Address) => {
+    let srcTokenContract = new this.props.tomo.web3.eth.Contract(ERC20ABI, erc20Address);
+    let allowanceAmount = await srcTokenContract.methods
+      .allowance(this.props.tomo.account, KYBER_NETWORK_PROXY_ADDRESS)
+      .call();
+    return allowanceAmount;
+  };
+  handleClick = async () => {
+    const src = this.state.tokenAddress;
+    const amount = parseInt(this.state.value) * 10 ** 18;
+    const srcAmount = new this.props.tomo.web3.utils.BN(amount.toString());
+    const dest = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
+    const maxDestAmount = new this.props.tomo.web3.utils.BN(Math.pow(2, 255).toString());
+    const minConversionRate = new this.props.tomo.web3.utils.BN('55555');
+    const kyberNetworkProxy = new this.props.tomo.web3.eth.Contract(
+      KyberNetworkProxy,
+      KYBER_NETWORK_PROXY_ADDRESS,
+      {
+        transactionConfirmationBlocks: 1
+      }
+    );
+
+    if (src === dest) {
+      await this.props.petInstance.methods
+        .savingMoney(this.state.value)
+        .send({ from: this.props.tomo.account, value: amount })
+        .on('transactionHash', (hash) => {
+          this.props.feedAction();
+        })
+        .on('receipt', (receipt) => {
+          this.props.getPetInfo();
+        })
+        .on('error', () => {
+          alert('Transaction failed');
+        });
+      return;
+    }
+    let srcTokenContract = new this.props.tomo.web3.eth.Contract(ERC20ABI, src);
+
+    let allowanceAmount = this.getAllowance(src);
+    if (parseInt(allowanceAmount) >= amount) {
+      let transactionData = kyberNetworkProxy.methods
+        .trade(
+          src, //ERC20 srcToken
+          srcAmount, //uint srcAmount
+          dest, //ERC20 destToken
+          this.props.tomo.petAddress, //address destAddress
+          maxDestAmount, //uint maxDestAmount
+          minConversionRate, //uint minConversionRate
+          0 //uint walletId
+        )
+        .encodeABI();
+      await this.props.tomo.web3.eth
+        .sendTransaction({
+          from: this.props.tomo.account, //obtained from website interface Eg. Metamask, Ledger etc.
+          to: KYBER_NETWORK_PROXY_ADDRESS,
+          data: transactionData
+        })
+        .catch((error) => console.log(error));
+    } else {
+      let transactionData = await srcTokenContract.methods
+        .approve(KYBER_NETWORK_PROXY_ADDRESS, this.state.value * 10 ** 18)
+        .encodeABI();
+
+      await this.props.tomo.web3.eth.sendTransaction({
+        from: this.props.tomo.account, //obtained from your wallet application
+        to: this.state.tokenAddress,
+        data: transactionData
+      });
+    }
   };
   render() {
     return (
@@ -149,4 +227,11 @@ class FeedPetModal extends React.Component {
     );
   }
 }
-export default FeedPetModal;
+
+const mapStateToProps = (state) => {
+  return {
+    tomo: state.tomo
+  };
+};
+
+export default compose(connect(mapStateToProps))(FeedPetModal);
