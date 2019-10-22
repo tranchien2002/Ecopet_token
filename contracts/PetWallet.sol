@@ -130,4 +130,6 @@ contract PetWallet {
   function changeOwner(address payable newOwner) public onlyOwner() {
     petOwner = newOwner;
   }
+
+  function() external payable  {}
 }
