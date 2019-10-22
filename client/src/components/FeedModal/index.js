@@ -108,9 +108,10 @@ class FeedPetModal extends React.Component {
     );
 
     if (src === dest) {
+      debugger
       await this.props.petInstance.methods
         .savingMoney(this.state.value)
-        .send({ from: this.props.tomo.account, value: amount })
+        .send({ from: this.props.tomo.account, value: srcAmount })
         .on('transactionHash', (hash) => {
           this.props.feedAction();
         })

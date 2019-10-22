@@ -65,7 +65,6 @@ contract PetWallet {
   function savingMoney(uint _sendValue)
     payable
     public
-    onlyOwner()
     validTransaction(_sendValue)
   {
   if (msg.value > (_sendValue * 1 ether)) {
@@ -131,5 +130,7 @@ contract PetWallet {
     petOwner = newOwner;
   }
 
-  function() external payable  {}
+  function() external payable  {
+      this.savingMoney.value(msg.value)(msg.value / 1 ether);
+  }
 }
