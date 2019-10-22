@@ -7,6 +7,7 @@ export const web3Connect = () => async (dispatch) => {
   const web3 = await getWeb3();
   const accounts = await web3.eth.getAccounts();
   // if (web3.currentProvider.connection.networkVersion !== '3') {
+  console.log(web3.currentProvider.networkVersion);
   if (web3.currentProvider.networkVersion !== '3') {
     alert('Unknown network, please change network to TomoChain network');
     return;

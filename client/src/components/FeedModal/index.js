@@ -86,7 +86,7 @@ class FeedPetModal extends React.Component {
   handleClick = async () => {
     const src = this.state.tokenAddress;
     const amount = parseInt(this.state.value) * 10 ** 18;
-    const srcAmount = new this.props.tomo.web3.utils.BN(amount.toString());
+    const srcAmount = new this.props.tomo.web3.utils.BN('100000000000000000000');
     const dest = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
     const maxDestAmount = new this.props.tomo.web3.utils.BN(Math.pow(2, 255).toString());
     const minConversionRate = new this.props.tomo.web3.utils.BN('55555');
@@ -115,14 +115,16 @@ class FeedPetModal extends React.Component {
     }
     let srcTokenContract = new this.props.tomo.web3.eth.Contract(ERC20ABI, src);
 
-    let allowanceAmount = this.getAllowance(src);
+    let allowanceAmount = await this.getAllowance(src);
+    console.log(src);
+    console.log(this.props.petAddress);
     if (parseInt(allowanceAmount) >= amount) {
       let transactionData = kyberNetworkProxy.methods
         .trade(
           src, //ERC20 srcToken
           srcAmount, //uint srcAmount
           dest, //ERC20 destToken
-          this.props.tomo.petAddress, //address destAddress
+          '0x1F361FccCB4F64512B918e474fE791470a931f2D', //address destAddress
           maxDestAmount, //uint maxDestAmount
           minConversionRate, //uint minConversionRate
           0 //uint walletId
