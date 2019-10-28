@@ -1,17 +1,29 @@
-.dropdown button{
+.dropdown button {
   background: white;
   color: black;
-  width: 180px !important;
-  border:white
+  width: 145px !important;
+  border: white;
 }
 input {
-  border: white !important
+  border: white !important;
 }
-.modal-body{
-  background: #eff4fa
+.modal-body {
+  background: #eff4fa;
 }
-.rate{
-  padding-top: 5px;
+.rate {
+  padding-top: 10px;
   color: #8690ad;
-  font-size:13px
+  font-size: 18px;
+}
+.modal-dialog {
+  max-width: 800px !important;
+}
+p {
+  padding-top: 10px;
+}
+.modal-backdrop.show {
+  opacity: 0 !important;
+}
+.col b {
+  color: #ef8102;
 }

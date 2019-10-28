@@ -19,6 +19,8 @@ import { compose } from 'redux';
 import { connect } from 'react-redux';
 import KyberNetworkProxy from 'constants/KyberNetworkProxy.json';
 import ERC20ABI from 'constants/ERC20ABI.json';
+import store from 'store';
+import * as actions from 'actions';
 
 const KYBER_NETWORK_PROXY_ADDRESS = '0x818e6fecd516ecc3849daf6845e3ec868087b755';
 
@@ -26,15 +28,16 @@ class FeedPetModal extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      isOpen: false,
-      currentToken: 'https://files.kyber.network/DesignAssets/tokens/eth.svg',
+      isDropdownOpen: false,
+      currentToken: '',
       name: 'ETH',
       tokenAddress: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-      value: props.value,
-      rate: '',
-      changeETH: '',
-      changeUSD: '',
-      rateUSD: '',
+      value: 1,
+      tokenValue: 0,
+      rate: 0,
+      changeETH: 0,
+      changeUSD: 0,
+      rateUSD: 0,
       approved: true,
       approving: false
     };
@@ -46,10 +49,17 @@ class FeedPetModal extends React.Component {
       name: 'ETH'
     });
   }
-  handelToggle = () => {
+  handelDropdownToggle = () => {
     this.setState({
-      isOpen: !this.state.isOpen
+      isDropdownOpen: !this.state.isDropdownOpen
     });
+  };
+  getAllowance = async (erc20Address) => {
+    let srcTokenContract = new this.props.tomo.web3.eth.Contract(ERC20ABI, erc20Address);
+    let allowanceAmount = await srcTokenContract.methods
+      .allowance(this.props.tomo.account, KYBER_NETWORK_PROXY_ADDRESS)
+      .call();
+    return allowanceAmount;
   };
   changeToken = async (src, name, address) => {
     this.setState({
@@ -58,14 +68,12 @@ class FeedPetModal extends React.Component {
       tokenAddress: address
     });
     const allowance = await this.getAllowance(address);
-    console.log('allowance', allowance);
     await this.getRate();
-    if (allowance >= this.state.value * 10 ** 18) {
+    if (allowance >= this.state.tokenValue * 10 ** 18) {
       this.setState({ approved: true });
     } else {
       this.setState({ approved: false });
     }
-    console.log('value', this.state.value);
   };
   getRate = async () => {
     let ratesRequest = await fetch('https://api.kyber.network/change24h');
@@ -78,26 +86,39 @@ class FeedPetModal extends React.Component {
       rate: rate,
       changeETH: changeETH,
       changeUSD: changeUSD,
-      rateUSD: rateUSD,
-      value: Math.floor(this.props.value / rate)
+      rateUSD: rateUSD
     });
   };
-  handleChange = (event) => {
-    this.setState({ value: event.target.value });
+  handleChange = async (event) => {
+    let value = event.target.value;
+    // const allowance = await this.getAllowance(this.state.tokenAddress);
+    // if (allowance >= value * 10 ** 18) {
+    //   this.setState({ approved: true });
+    // } else {
+    //   this.setState({ approved: false });
+    // }
+    this.setState({
+      tokenValue: value,
+      value: value * this.state.rate
+    });
   };
-  getAllowance = async (erc20Address) => {
-    let srcTokenContract = new this.props.tomo.web3.eth.Contract(ERC20ABI, erc20Address);
-    let allowanceAmount = await srcTokenContract.methods
-      .allowance(this.props.tomo.account, KYBER_NETWORK_PROXY_ADDRESS)
-      .call();
-    return allowanceAmount;
+  handleChangeETH = async (event) => {
+    // this.getRate();
+    // this.setState({
+    //   value: event.target.value,
+    //   tokenValue: event.target.value / this.state.rate
+    // });
+    // const allowance = await this.getAllowance(this.state.tokenAddress);
+    // if (allowance >= this.state.tokenValue * 10 ** 18) {
+    //   this.setState({ approved: true });
+    // } else {
+    //   this.setState({ approved: false });
+    // }
   };
-  handleClick = async () => {
+  handleSwapTokenClick = (value) => async () => {
+    //TODO: swap token
     const src = this.state.tokenAddress;
-    const amount = parseInt(this.state.value);
-    const srcAmount = new this.props.tomo.web3.utils.BN(amount.toString() + '000000000000000000');
-    const dest = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
-    const maxDestAmount = new this.props.tomo.web3.utils.BN(Math.pow(2, 255).toString());
+    const srcAmount = this.props.tomo.web3.utils.toWei(value);
     const minConversionRate = new this.props.tomo.web3.utils.BN('55555');
     const kyberNetworkProxy = new this.props.tomo.web3.eth.Contract(
       KyberNetworkProxy,
@@ -107,42 +128,27 @@ class FeedPetModal extends React.Component {
       }
     );
 
-    if (src === dest) {
-      debugger
-      await this.props.petInstance.methods
-        .savingMoney(this.state.value)
-        .send({ from: this.props.tomo.account, value: srcAmount })
-        .on('transactionHash', (hash) => {
-          this.props.feedAction();
-        })
-        .on('receipt', (receipt) => {
-          this.props.getPetInfo();
-        })
-        .on('error', () => {
-          alert('Transaction failed');
-        });
-      return;
-    }
     let srcTokenContract = new this.props.tomo.web3.eth.Contract(ERC20ABI, src);
 
     let allowanceAmount = await this.getAllowance(src);
-    if (parseInt(allowanceAmount) >= amount * 10 ** 18) {
+    if (parseInt(allowanceAmount) >= value * 10 ** 18) {
       let transactionData = kyberNetworkProxy.methods
-        .trade(
-          src, //ERC20 srcToken
-          srcAmount, //uint srcAmount
-          dest, //ERC20 destToken
-          this.props.petAddress, //address destAddress
-          maxDestAmount, //uint maxDestAmount
-          minConversionRate, //uint minConversionRate
-          0 //uint walletId
-        )
+        .swapTokenToEther(src, srcAmount, minConversionRate)
         .encodeABI();
+
       await this.props.tomo.web3.eth
         .sendTransaction({
           from: this.props.tomo.account, //obtained from website interface Eg. Metamask, Ledger etc.
           to: KYBER_NETWORK_PROXY_ADDRESS,
           data: transactionData
+        })
+        .on('receipt', async (reciept) => {
+          let balance = await this.props.tomo.web3.eth.getBalance(this.props.tomo.account);
+          await store.dispatch(
+            actions.updateBalance(
+              parseFloat(this.props.tomo.web3.utils.fromWei(balance)).toFixed(2)
+            )
+          );
         })
         .catch((error) => console.log(error));
     } else {
@@ -163,6 +169,7 @@ class FeedPetModal extends React.Component {
           this.setState({ approved: true });
         });
     }
+    this.props.toggle();
   };
   render() {
     return (
@@ -171,8 +178,18 @@ class FeedPetModal extends React.Component {
           <ModalHeader></ModalHeader>
           <ModalBody>
             <Row>
-              <Col xs='5'>
-                <Dropdown isOpen={this.state.isOpen} toggle={this.handelToggle}>
+              <Col>
+                <b>From:</b>
+              </Col>
+              <Col></Col>
+              <Col>
+                <b>To: </b>
+              </Col>
+              <Col></Col>
+            </Row>
+            <Row>
+              <Col xs='3'>
+                <Dropdown isOpen={this.state.isDropdownOpen} toggle={this.handelDropdownToggle}>
                   <DropdownToggle className='toggle'>
                     <Row>
                       <Col>
@@ -200,16 +217,40 @@ class FeedPetModal extends React.Component {
                   </DropdownMenu>
                 </Dropdown>
               </Col>
-              <Col xs='7'>
+              <Col xs='3'>
                 <Row>
-                  <Input type='text' value={this.state.value} onChange={this.handleChange} />
+                  <Input type='text' value={this.state.tokenValue} onChange={this.handleChange} />
                 </Row>
+              </Col>
+              <Col xs='3'>
+                <Dropdown>
+                  <DropdownToggle className='toggle'>
+                    <Row>
+                      <Col>
+                        <img
+                          src='https://files.kyber.network/DesignAssets/tokens/eth.svg'
+                          width='28'
+                          alt='Token'
+                        />
+                      </Col>
+                      <Col>ETH</Col>
+                    </Row>
+                  </DropdownToggle>
+                </Dropdown>
+              </Col>
+              <Col xs='3'>
                 <Row>
-                  <div className='rate'>
-                    {this.state.name} = {Math.round(this.state.rate * 1000) / 1000} ETH ={' '}
-                    {Math.round(this.state.rateUSD * 1000) / 1000} USD
-                  </div>
+                  <Input type='text' value={this.state.value} onChange={this.handleChangeETH} />
                 </Row>
+              </Col>
+            </Row>
+            <Row>
+              <Col></Col>
+              <Col>
+                <div className='rate'>
+                  1 {this.state.name} = {Math.round(this.state.rate * 1000) / 1000} ETH ={' '}
+                  {Math.round(this.state.rateUSD * 1000) / 1000} USD
+                </div>
               </Col>
             </Row>
           </ModalBody>
@@ -233,14 +274,15 @@ class FeedPetModal extends React.Component {
               </p>
             </Col>
             {this.state.approved ? (
-              <Button color='success' onClick={() => this.handleClick().then(this.props.toggle)}>
-                Feed
+              <Button color='success' onClick={this.handleSwapTokenClick(this.state.tokenValue)}>
+                Swap
               </Button>
             ) : (
-              <Button color='warning' onClick={() => this.handleClick().then(this.props.toggle)}>
+              <Button color='warning' onClick={this.handleSwapTokenClick(this.state.tokenValue)}>
                 Approve
               </Button>
             )}
+
             <Button color='danger' onClick={this.props.toggle}>
               Cancel
             </Button>
@@ -250,7 +292,6 @@ class FeedPetModal extends React.Component {
     );
   }
 }
-
 const mapStateToProps = (state) => {
   return {
     tomo: state.tomo

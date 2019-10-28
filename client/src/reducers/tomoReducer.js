@@ -33,6 +33,11 @@ const tomoReducer = (state = initialState, action) => {
         ...state,
         petsAddress: action.petsAddress
       };
+    case actions.UPDATE_BALANCE:
+      return {
+        ...state,
+        balance: action.balance
+      };
     default:
       return state;
   }
