@@ -144,3 +144,11 @@ export const createNewPet = (petId, targetFund, duration, purpose) => async (
       console.log('Create pet action error', e);
     });
 };
+
+export const UPDATE_BALANCE = 'UPDATE_BALANCE';
+export const updateBalance = (balance) => async (dispatch, getState) => {
+  dispatch({
+    type: UPDATE_BALANCE,
+    balance
+  });
+};
